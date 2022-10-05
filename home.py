@@ -1,10 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, json
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
-    return "<p>Hello, World!!</p>"
+    return json.dumps({'ip': request.remote_addr, 'headers': {k:v for k, v in request.headers.items()}})
 @app.route("/add")
 def add():
     a = request.args['a']
