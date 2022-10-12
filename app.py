@@ -10,3 +10,8 @@ def add():
     a = request.args['a']
     b = request.args['b']
     return str(int(a) + int(b))
+
+@app.route("/telegram/webhook", methods = ['GET', 'POST', 'DELETE'])
+def webhook():
+    print(request.json)
+    return request.json
