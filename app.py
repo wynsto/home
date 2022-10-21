@@ -1,5 +1,5 @@
 import os
-from flask import Flask, url_for, redirect, render_template, request, abort, json
+from flask import Flask, url_for, redirect, send_from_directory, render_template, request, abort, json
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required, current_user
@@ -8,7 +8,7 @@ import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='client/build')
 # set optional bootswatch theme
 app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 app.config.from_pyfile('config.py')
@@ -71,10 +71,14 @@ class MyModelView(sqla.ModelView):
                 # login
                 return redirect(url_for('security.login', next=request.url))
 
-# Flask views
-@app.route('/')
-def index():
-    return render_template('index.html')
+# # Flask views
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
+
+@app.route("/", defaults={'path':''})
+def serve(path):
+    return send_from_directory(app.static_folder,'index.html')
 
 # Create admin
 admin = flask_admin.Admin(
