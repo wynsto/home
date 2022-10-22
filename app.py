@@ -1,14 +1,16 @@
 import os
-from flask import Flask, url_for, redirect, send_from_directory, render_template, request, abort, json
+from flask import Flask, url_for, redirect, send_from_directory, render_template, request, abort, json, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, \
-    UserMixin, RoleMixin, login_required, current_user
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user
+from sqlalchemy import JSON
 from flask_security.utils import encrypt_password
 import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
+from flask_cors import CORS
 
 app = Flask(__name__, static_url_path='', static_folder='client/build')
+CORS(app)
 # set optional bootswatch theme
 app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 app.config.from_pyfile('config.py')
@@ -54,6 +56,13 @@ class Position(db.Model):
 
     def __str__(self):
         return self.name
+    def obj_to_dict(self):  # for build json format
+        return {
+            "name": self.name,
+            "description": self.description,
+            "lat": self.lat,
+            "lng": self.lng,
+        }
 
 
 # Setup Flask-Security
@@ -97,6 +106,17 @@ admin = flask_admin.Admin(
     base_template='my_master.html',
     template_mode='bootstrap4',
 )
+
+def dict_helper(objlist):
+    result2 = [item.obj_to_dict() for item in objlist]
+    return result2
+
+@app.route("/positions")
+def positions():
+    positions = db.session.execute(db.select(Position).order_by(Position.name)).scalars()
+    #print(positions)
+    positions_dist = dict_helper(positions)
+    return jsonify(positions=positions_dist)
 
 # Add model views
 admin.add_view(MyModelView(Role, db.session))
@@ -180,11 +200,11 @@ def webhook():
 if __name__ == '__main__':
 
     # Build a sample db on the fly, if one does not exist yet.
-    app_dir = os.path.realpath(os.path.dirname(__file__))
-    database_path = os.path.join(app_dir, app.config['DATABASE_FILE'])
-    if not os.path.exists(database_path):
-        with app.app_context():
-            build_sample_db()
+    # app_dir = os.path.realpath(os.path.dirname(__file__))
+    # database_path = os.path.join(app_dir, app.config['DATABASE_FILE'])
+    # if not os.path.exists(database_path):
+    #     with app.app_context():
+    #         build_sample_db()
 
     # Start app
     app.run(debug=True)
