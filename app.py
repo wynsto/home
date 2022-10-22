@@ -45,6 +45,16 @@ class User(db.Model, UserMixin):
     def __str__(self):
         return self.email
 
+class Position(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+    lat = db.Column(db.Float())
+    lng = db.Column(db.Float())
+
+    def __str__(self):
+        return self.name
+
 
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -91,6 +101,7 @@ admin = flask_admin.Admin(
 # Add model views
 admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(User, db.session))
+admin.add_view(MyModelView(Position, db.session))
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
