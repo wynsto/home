@@ -1,5 +1,8 @@
 #!/bin/bash
-BASEDIR=$(dirname start.sh)
-. $BASEDIR/venv/bin/activate
+BASEDIR=$(dirname $0)
+
+echo $BASEDIR
+cd $BASEDIR
+. ./venv/bin/activate
 #pip install -r requirements.txt
-authbind gunicorn
+gunicorn

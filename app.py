@@ -6,7 +6,7 @@ from sqlalchemy import JSON
 from flask_security.utils import encrypt_password
 import flask_admin
 from flask_admin.contrib import sqla
-from flask_admin import helpers as admin_helpers
+from flask_admin import helpers as admin_helpers, expose
 from flask_cors import CORS
 
 app = Flask(__name__, static_url_path='', static_folder='client/build')
@@ -90,10 +90,22 @@ class MyModelView(sqla.ModelView):
                 # login
                 return redirect(url_for('security.login', next=request.url))
 
-# # Flask views
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
+# Create customized model view class
+class PositionModelView(MyModelView):
+    create_template = 'create_position.html'
+    def create_model(self, form):
+        id = form.name.data
+        model = self.get_one(id)
+        print(model)
+        model.name = 1111111
+        super().create_model(form)
+    # @expose('/new/', methods=('GET', 'POST'))
+    # def create_view(self):
+    #     """
+    #     Custom create view.
+    #     """
+    #     return self.render('create_position.html')
+
 
 @app.route("/", defaults={'path':''})
 def serve(path):
@@ -121,7 +133,7 @@ def positions():
 # Add model views
 admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(User, db.session))
-admin.add_view(MyModelView(Position, db.session))
+admin.add_view(PositionModelView(Position, db.session))
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
