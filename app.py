@@ -8,6 +8,7 @@ import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers, expose
 from flask_cors import CORS
+import ipapi
 
 app = Flask(__name__, static_url_path='', static_folder='client/build')
 CORS(app)
@@ -129,6 +130,12 @@ def positions():
     #print(positions)
     positions_dist = dict_helper(positions)
     return jsonify(positions=positions_dist)
+
+@app.route("/ipgeo")
+def ipgeo():
+    loc = ipapi.location()
+    return loc
+
 
 # Add model views
 admin.add_view(MyModelView(Role, db.session))
