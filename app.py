@@ -10,6 +10,8 @@ from flask_admin import helpers as admin_helpers, expose
 from flask_cors import CORS
 import ipapi
 
+from datetime import datetime
+
 app = Flask(__name__, static_url_path='', static_folder='client/build')
 CORS(app)
 # set optional bootswatch theme
@@ -133,9 +135,14 @@ def positions():
 
 @app.route("/ipgeo")
 def ipgeo():
-    loc = ipapi.location()
+    ip = request.remote_addr
+    # print(request)
+    loc = ipapi.location(ip)
+    # locDict = json.loads(loc)
+    # print(loc)
+    #headers = dict(request.headers)
+    loc['datetime'] = datetime.now()
     return loc
-
 
 # Add model views
 admin.add_view(MyModelView(Role, db.session))
