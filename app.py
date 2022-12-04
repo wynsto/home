@@ -3,6 +3,7 @@ from flask import Flask, url_for, redirect, send_from_directory, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user
 from sqlalchemy import JSON
+from sqlalchemy.orm import Query
 from flask_security.utils import encrypt_password
 import flask_admin
 from flask_admin.contrib import sqla
@@ -10,7 +11,7 @@ from flask_admin import helpers as admin_helpers, expose
 from flask_cors import CORS
 import ipapi
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__, static_url_path='', static_folder='client/build')
 CORS(app)
@@ -67,6 +68,38 @@ class Position(db.Model):
             "lng": self.lng,
         }
 
+class FxRate(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    hkd = db.Column(db.Float())
+    usd = db.Column(db.Float())
+    cny = db.Column(db.Float())
+    jpy = db.Column(db.Float())
+    gbp = db.Column(db.Float())
+    eur = db.Column(db.Float())
+    cad = db.Column(db.Float())
+    aud = db.Column(db.Float())
+    sgd = db.Column(db.Float())
+    thb = db.Column(db.Float())
+    time = db.Column(db.DateTime())
+    date = db.Column(db.String(10))
+
+    def __str__(self):
+        return self.name
+    def obj_to_dict(self):  # for build json format
+        return {
+            "hkd": self.hkd,
+            "usd": self.usd,
+            "cny": self.cny,
+            "jpy": self.jpy,
+            "gbp": self.gbp,
+            "eur": self.eur,
+            "cad": self.cad,
+            "aud": self.aud,
+            "sgd": self.sgd,
+            "thb": self.thb,
+            "time": self.time,
+            "date": self.date,
+        }
 
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -126,12 +159,39 @@ def dict_helper(objlist):
     result2 = [item.obj_to_dict() for item in objlist]
     return result2
 
+def list_helper(objlist):
+    result = []
+    for item in objlist:
+        print(item)
+        (value, base, date) = item
+        rate = {}
+        rate['value'] = value / base
+        rate['date'] = date
+        result.append(rate)
+    #result2 = [item.obj_to_dict() for item in objlist]
+    return result
+
 @app.route("/positions")
 def positions():
     positions = db.session.execute(db.select(Position).order_by(Position.name)).scalars()
     #print(positions)
     positions_dist = dict_helper(positions)
     return jsonify(positions=positions_dist)
+
+@app.route("/fxrate")
+def fx_rate():
+    rates = db.session.execute(db.select(FxRate).order_by(FxRate.time.desc()).limit(1)).scalars()
+    rates_dist = dict_helper(rates)
+    return jsonify(rates_dist[0])
+@app.route("/fxrate/<currency>")
+def fx_rate_currency(currency):
+    return fx_rate_currency_base(currency, 'usd')
+
+@app.route("/fxrate/<currency>/<base>")
+def fx_rate_currency_base(currency, base):
+    rates = db.session.execute(db.select(getattr(FxRate, currency), getattr(FxRate, base), FxRate.date).order_by(FxRate.time.desc())).all()
+    rates_dist = list_helper(rates)
+    return  jsonify(rates_dist)
 
 @app.route("/ipgeo")
 def ipgeo():
