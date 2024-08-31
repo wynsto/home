@@ -5,19 +5,19 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@material-ui/icons": "^4.11.3",
-    "@mui/icons-material": "^5.14.13",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "leaflet": "^1.9.2",
+    "@mui/icons-material": "^5.14.14",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.5.1",
+    "leaflet": "^1.9.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-leaflet": "^4.1.0",
+    "react-leaflet": "^4.2.1",
     "react-leaflet-bing-v2": "^5.2.3",
-    "react-leaflet-google-layer": "^2.0.7",
+    "react-leaflet-google-layer": "^2.2.0",
     "react-leaflet-google-v2": "^6.0.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "react-scripts": "^5.0.1",
+    "web-vitals": "^3.5.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -42,5 +42,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }

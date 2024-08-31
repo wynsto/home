@@ -11,6 +11,8 @@ from flask_admin import helpers as admin_helpers, expose
 from flask_cors import CORS
 import ipapi
 
+from sqlalchemy import desc
+
 from datetime import datetime, timedelta
 
 app = Flask(__name__, static_url_path='', static_folder='client/build')
@@ -80,7 +82,7 @@ class FxRate(db.Model):
     aud = db.Column(db.Float())
     sgd = db.Column(db.Float())
     thb = db.Column(db.Float())
-    time = db.Column(db.DateTime())
+    #time = db.Column(db.DateTime())
     date = db.Column(db.String(10))
 
     def __str__(self):
@@ -97,7 +99,6 @@ class FxRate(db.Model):
             "aud": self.aud,
             "sgd": self.sgd,
             "thb": self.thb,
-            "time": self.time,
             "date": self.date,
         }
 
@@ -168,6 +169,7 @@ def list_helper(objlist):
         rate['value'] = value / base
         rate['date'] = date
         result.append(rate)
+    result.reverse()
     #result2 = [item.obj_to_dict() for item in objlist]
     return result
 
@@ -180,18 +182,27 @@ def positions():
 
 @app.route("/fxrate")
 def fx_rate():
-    rates = db.session.execute(db.select(FxRate).order_by(FxRate.time.desc()).limit(1)).scalars()
+    rates = db.session.execute(db.select(FxRate).order_by(desc(FxRate.date)).limit(1)).scalars()
     rates_dist = dict_helper(rates)
     return jsonify(rates_dist[0])
+
 @app.route("/fxrate/<currency>")
 def fx_rate_currency(currency):
     return fx_rate_currency_base(currency, 'usd')
 
 @app.route("/fxrate/<currency>/<base>")
 def fx_rate_currency_base(currency, base):
-    rates = db.session.execute(db.select(getattr(FxRate, currency), getattr(FxRate, base), FxRate.date).order_by(FxRate.time.desc())).all()
+    rates = db.session.execute(
+        db.select(
+            getattr(FxRate, currency), 
+            getattr(FxRate, base), 
+            FxRate.date
+        ).order_by(
+            desc(FxRate.date)
+        ).limit(5)
+    ).all()
     rates_dist = list_helper(rates)
-    return  jsonify(rates_dist)
+    return jsonify(rates_dist)
 
 @app.route("/ipgeo")
 def ipgeo():
